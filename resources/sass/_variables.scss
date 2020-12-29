@@ -1,0 +1,49 @@
+// Body
+$body-bg: #f8fafc;
+
+// Typography
+$font-family-sans-serif: 'Nunito', sans-serif;
+$font-size-base: 0.9rem;
+$line-height-base: 1.6;
+
+// Colors
+$blue: #3490dc;
+$indigo: #6574cd;
+$purple: #9561e2;
+$pink: #f66d9b;
+$red: #e3342f;
+$orange: #f6993f;
+$yellow: #ffed4a;
+$green: #38c172;
+$teal: #4dc0b5;
+$cyan: #6cb2eb;
+
+*{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    outline: none;
+}
+body {
+    background: $body-bg;
+}
+
+.project-btn {
+    width: 100%;
+    min-width: 170px;
+    margin-bottom: 5px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 12px 0px !important;
+}
+.error-notify {
+    width: 800px !important;
+    word-break: break-all;
+}
+
+
+@font-face {
+    font-family: 'my-dankmono';
+    src: url("../fonts/dankmono.ttf");
+}
