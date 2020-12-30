@@ -27,7 +27,7 @@ class Project extends Model
 
     public function config()
     {
-        return $this->hasOne(ProjectConfig::class);
+        return $this->hasOne(ProjectConfig::class, 'project_id', 'project_id');
     }
 
     public function getEnvFileTypeAttribute()
