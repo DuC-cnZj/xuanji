@@ -10,7 +10,7 @@
                 circle
             ></el-button>
             <el-button
-                @click="configVisable = !configVisable"
+                @click="toggleConfig"
                 icon="el-icon-s-opportunity"
                 :class="configVisable ? ['show-config', 'light'] : ['show-config']"
                 size="medium"
@@ -429,20 +429,36 @@ export default {
         }
     },
     created() {
+        this.configVisable = this.isConfigVisable()
+
         this.fetchProjects();
         this.getConfigTips();
     },
     methods: {
+        isConfigVisable() {
+            return window.localStorage.getItem("configVisable") === "on"
+        },
+        showConfig() {
+            window.localStorage.setItem("configVisable", "on")
+            this.configVisable = true
+        },
+        hideConfig() {
+            window.localStorage.setItem("configVisable", "off")
+            this.configVisable = false
+        },
+        toggleConfig() {
+            if (window.localStorage.getItem("configVisable") === "on") {
+                this.hideConfig()
+                this.configVisable = false
+            } else {
+                this.showConfig()
+                this.configVisable = true
+            }
+        },
         getConfigTips() {
             getConfigTips().then(({ data }) => {
                 this.tip = data.data.html;
                 this.tipMd = data.data.md;
-
-                if (!this.tip) {
-                    this.configVisable = false
-                } else {
-                    this.configVisable = true
-                }
             });
         },
         submitMde({ content, callback }) {
@@ -451,7 +467,7 @@ export default {
                 this.tipMd = data.data.md;
                 this.$notify.success(`修改成功`);
                  if (!this.tip) {
-                    this.configVisable = false
+                    this.hideConfig()
                 }
                 this.configTipsEditorVisable = false;
                 callback();
