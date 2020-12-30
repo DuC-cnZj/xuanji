@@ -53,6 +53,8 @@ class Project extends Model
             'commiter_name'  => $commit['committer_name'],
             'commiter_email' => $commit['committer_email'],
             'committed_date' => $commit['committed_date'],
+            'branch'         => $this->branch,
+            'name'           => $this->name,
             'web_url'        => $commit['web_url'],
             'title'          => $commit['title'],
             'creator'        => $this->creator,
@@ -77,7 +79,7 @@ class Project extends Model
 
         [$https, $http] = $this->ingresses($k8sApi);
 
-        return array_merge_recursive($nodePorts, $https, $http);
+        return collect(array_merge_recursive($nodePorts, $https, $http))->flatten()->values()->toArray();
     }
 
     public function allPodReady(): bool

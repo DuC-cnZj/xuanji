@@ -102,14 +102,17 @@
                                 width="300"
                                 trigger="hover"
                             >
-                                <el-link
-                                    type="success"
-                                    :href="link"
-                                    v-for="link in project.links"
-                                    target="_blank"
-                                    :key="link"
-                                    >{{ link }}</el-link
-                                >
+                                <div v-for="(linkObj, key) in project.links" :key="key">
+                                    <div v-for="link in linkObj.links" :key="link">
+                                        <span>{{linkObj.name}}:</span>
+                                        <el-link
+                                            type="success"
+                                            :href="link"
+                                            target="_blank">
+                                            {{ link }}
+                                        </el-link>
+                                    </div>
+                                </div>
                                 <i class="el-icon-link" slot="reference"></i>
                             </el-popover>
                             <el-tooltip

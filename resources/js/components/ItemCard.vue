@@ -179,6 +179,14 @@
                             </div>
                             <!-- cpu memory -->
 
+                            <!-- branch -->
+                            <div>
+                                <i class="el-icon-s-flag"></i>
+                                <strong>branch: </strong>
+                                {{ detail.branch }}
+                            </div>
+                            <!-- branch -->
+
                             <!-- commit web url & title -->
                             <div>
                                 <i class="el-icon-link"></i>

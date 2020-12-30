@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ns;
+use App\Models\Project;
 use App\Services\K8sApi;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -22,12 +23,22 @@ class NamespacesController extends Controller
         [$owned, $others] = Ns::with('projects')
             ->get()
             ->map(function ($ns) use ($k8sApi) {
+                $links = collect(
+                    $ns
+                        ->projects
+                        ->map(
+                            fn (Project $p) => ['name' => $p->name, 'links' => $p->getExternalIps()]
+                        )
+                )
+                    ->values()
+                    ->toArray();
+
                 return [
                     'owned'     => auth()->id() == $ns->user_id,
                     'id'        => $ns->id,
                     'namespace' => $ns->name,
                     'projects'  => $ns->projects->map->only('id', 'env', 'name', 'env_file_type', 'all_pod_ready', 'project_id', 'commit', 'branch')->toArray(),
-                    'links'     => collect($ns->projects->map->getExternalIps())->flatten()->values()->toArray(),
+                    'links'     => $links,
                     'usage'     => $this->usage($ns, $k8sApi),
                 ];
             })
