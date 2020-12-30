@@ -679,7 +679,7 @@ export default {
     pointer-events: none;
 }
 
-.active-case-dialog-div /deep/ .el-dialog__wrapper {
-    z-index: 9999 !important;
+.inactive-case-dialog-div /deep/ .el-dialog__wrapper {
+    z-index: 1996 !important;
 }
 </style>
