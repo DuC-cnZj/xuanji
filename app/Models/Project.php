@@ -94,14 +94,18 @@ class Project extends Model
             ->map(function ($item) {
                 $host = Arr::get($item, 'status.loadBalancer.ingress.0.hostname') ?? config('k8s.cluster_ip');
 
-                $protocol = "http://";
+                return collect(Arr::get($item, 'spec.ports', []))->map(function ($data) use ($host) {
+                    $protocol = "http://";
 
-                if (Str::contains(strtolower(Arr::get($item, 'spec.ports.0.name')), ['tcp', 'rpc', 'grpc'])) {
-                    $protocol = "tcp://";
-                }
+                    if (Str::contains(strtolower(Arr::get($data, 'name')), ['tcp', 'rpc', 'grpc'])) {
+                        $protocol = "tcp://";
+                    }
 
-                return $protocol . $host . ':' . Arr::get($item, 'spec.ports.0.nodePort');
+                    return $protocol . $host . ':' . Arr::get($data, 'nodePort');
+                });
             })
+            ->flatten(1)
+            ->values()
             ->toArray();
     }
 
