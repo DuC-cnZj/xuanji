@@ -12,7 +12,7 @@ class ConfigTipsController extends Controller
     {
         $tips = ConfigTips::create([
             'creator' => auth()->user()->user_name,
-            'content' => $request->content,
+            'content' => $request->input('content'),
         ]);
 
         return response()->json([
@@ -25,14 +25,14 @@ class ConfigTipsController extends Controller
 
     public function getLast()
     {
-        $tip = ConfigTips::latest()->value('content');
+        $tip = ConfigTips::query()->latest()->value('content');
 
         return response()->json([
             'data' => [
                 'html' => $this->getCommonMarkConverter()->convertToHtml($tip ?? ''),
                 'md'   => $tip ?? '',
             ],
-        ], 200);
+        ]);
     }
 
     /**

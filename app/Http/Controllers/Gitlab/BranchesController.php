@@ -11,13 +11,6 @@ use App\Http\Controllers\Controller;
 
 class BranchesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @param GitlabApi $api
-     * @param $project
-     * @return array
-     */
     public function index(GitlabApi $api, $project)
     {
         $branchPatterns = ProjectConfig::whereProjectId($project)->value('branches');
@@ -28,14 +21,6 @@ class BranchesController extends Controller
             ->toArray();
     }
 
-    /**
-     * @param GitlabApi $api
-     * @param $project
-     * @param $branch
-     * @return \Illuminate\Support\Collection
-     *
-     * @author duc <1025434218@qq.com>
-     */
     public function commits(GitlabApi $api, $project, $branch)
     {
         return collect($api->branchCommits($project, $branch))

@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ProjectConfig;
 use App\Configs\ChartValuesImp;
-use Illuminate\Support\Facades\Log;
 use League\CommonMark\CommonMarkConverter;
 
 class ProjectsController extends Controller
@@ -21,7 +20,7 @@ class ProjectsController extends Controller
      * Display a listing of the resource.
      *
      * @param Ns $namespace
-     * @return \Illuminate\Http\Response
+     * @return array
      */
     public function index(Ns $namespace)
     {
@@ -82,16 +81,16 @@ class ProjectsController extends Controller
         $input = $this->validate($request, [
             'branch' => 'required',
             'commit' => 'required',
+            'env'    => 'string',
         ]);
 
-        $branch = $request->branch;
-        $commit = $request->commit;
-        $projectId = $project->project_id;
-        $env = $request->env ?? '';
+        $branch = $input['branch'];
+        $commit = $input['commit'];
+        $env = $input['env'];
+
         /** @var ProjectConfig $config */
-        $config = ProjectConfig::query()->where('project_id', $projectId)->first();
-        $config->refreshRepo();
-        Log::debug('repo', [$config->helm_repo_name, $config->helm_repo_url]);
+        $config = $project->config;
+        $projectId = $project->project_id;
 
         $this->upgradeOrInstall($config, $projectId, $branch, $commit, $namespace, $env, $project->name);
 
@@ -116,7 +115,7 @@ class ProjectsController extends Controller
     {
         $namespace->uninstall($project);
 
-        return response()->noContent(204);
+        return response()->noContent();
     }
 
     public function containerLogs(Request $request, Ns $namespace, Project $project, K8sApi $k8sApi)
@@ -244,6 +243,7 @@ LOG
                 logger()->error('error install use local_chart', [
                     'chartName'   => $chartName,
                     'local_chart' => $config->local_chart,
+                    'error'       => $e->getMessage(),
                 ]);
             } finally {
                 if (! $installed) {

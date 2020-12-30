@@ -8,7 +8,6 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Events\NamespaceCreated;
 use App\Events\NamespaceDeleting;
-use Illuminate\Support\Facades\Log;
 
 class NamespacesController extends Controller
 {
@@ -98,7 +97,6 @@ class NamespacesController extends Controller
     {
         $res = $k8sApi->topNsPods($namespace->name, 'items');
 
-        Log::debug('usage', collect($res)->toArray());
         $memory = collect($res)
             ->pluck('containers.*.usage.memory')
             ->flatten()

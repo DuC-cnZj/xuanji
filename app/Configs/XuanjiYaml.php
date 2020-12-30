@@ -15,7 +15,8 @@ class XuanjiYaml
     protected array $data = [];
     protected GitlabApi $api;
     protected FileParser $parser;
-    protected array $mustHave = ['config_file', 'config_file_type', 'repository', 'tag_format'];
+    protected array $chartMustHave = ['repository', 'tag_format', 'chart', 'helm_repo_name', 'helm_repo_url'];
+    protected array $localChartMustHave = ['local_chart', 'repository', 'tag_format'];
 
     public function __construct($projectInfo)
     {
@@ -34,12 +35,18 @@ class XuanjiYaml
         }
         $this->shouldImport = true;
 
-        if (! $this->ensureHasFields($yaml, $this->mustHave)) {
-            return;
+        $chartConfigured = false;
+        if (Arr::has($yaml, 'local_chart')) {
+            if (!$this->ensureHasFields($yaml, $this->localChartMustHave)) {
+                return;
+            }
+            $chartConfigured = true;
         }
-//        chart, local_chart 二选一
-        if (! Arr::hasAny($yaml, ['chart', 'local_chart'])) {
-            return;
+
+        if (Arr::has($yaml, 'chart')) {
+            if (!$this->ensureHasFields($yaml, $this->chartMustHave) && !$chartConfigured) {
+                return;
+            }
         }
 
         $this->valid = true;
@@ -59,12 +66,12 @@ class XuanjiYaml
         ]);
     }
 
-    public function isValid()
+    public function isValid(): bool
     {
         return $this->valid;
     }
 
-    public function shouldImport()
+    public function shouldImport(): bool
     {
         return $this->shouldImport;
     }
@@ -74,12 +81,12 @@ class XuanjiYaml
         return $this->projectId;
     }
 
-    private function ensureHasFields($yaml, $keys)
+    private function ensureHasFields($yaml, $keys): bool
     {
         return Arr::has($yaml, $keys);
     }
 
-    public function data()
+    public function data(): array
     {
         return $this->data;
     }

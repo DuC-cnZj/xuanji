@@ -2,7 +2,8 @@
 
 namespace Tests\Unit;
 
-use PHPUnit\Framework\TestCase;
+
+use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
@@ -13,14 +14,6 @@ class ExampleTest extends TestCase
      */
     public function testBasicTest()
     {
-        $arr = [
-            [
-                'project' => 1,
-                'file'    => '.env',
-            ],
-        ];
-        dd(collect($arr)->keyBy->project->get('2')['file']);
-
         $this->assertTrue(true);
     }
 }

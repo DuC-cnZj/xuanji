@@ -195,7 +195,7 @@ class K8sApi
 DATA;
         $res = $this->http()->post("/api/v1/namespaces/{$ns}/secrets", [
             'metadata' => [
-                'name'   => $secretName,
+                'name' => $secretName,
             ],
             'type' => 'kubernetes.io/dockerconfigjson',
             'data' => [
@@ -295,18 +295,18 @@ DATA;
         $namespace = NsNameTransformer::transform($project->namespace->name);
 
         return [
-                $project->name => collect(
-                    $this
-                        ->http()
-                        ->get(
-                            "/apis/extensions/v1beta1/namespaces/{$namespace}/ingresses",
-                            [
-                                'labelSelector' => 'app.kubernetes.io/instance=' . $project->name,
-                            ]
-                        )
-                        ->json($key)
-                ),
-            ];
+            $project->name => collect(
+                $this
+                    ->http()
+                    ->get(
+                        "/apis/extensions/v1beta1/namespaces/{$namespace}/ingresses",
+                        [
+                            'labelSelector' => 'app.kubernetes.io/instance=' . $project->name,
+                        ]
+                    )
+                    ->json($key)
+            ),
+        ];
     }
 
     public function getServices(Ns $ns, $key = null)

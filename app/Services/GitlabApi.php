@@ -68,7 +68,7 @@ class GitlabApi
         logger()->error('getProjectFile', [
             'status' => $res->status(),
             'body'   => $res->body(),
-            'file' => $file,
+            'file'   => $file,
         ]);
 
         return '';
@@ -125,12 +125,6 @@ class GitlabApi
         return Http::withHeaders([
             'PRIVATE-TOKEN' => config('gitlab.token'),
         ])
-//            ->withOptions([
-//            'proxy' => [
-//                'http'  => 'http://localhost:7890', // Use this proxy with "http"
-//                'https' => 'http://localhost:7890', // Use this proxy with "https",
-//            ],
-//        ])
             ->baseUrl($this->gitlabUrl);
     }
 }

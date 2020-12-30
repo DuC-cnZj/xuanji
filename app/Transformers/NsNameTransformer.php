@@ -6,7 +6,7 @@ use Illuminate\Support\Str;
 
 class NsNameTransformer
 {
-    public static function transform($value)
+    public static function transform($value): string
     {
         $prefix = config('k8s.ns_prefix');
         if (! Str::startsWith($value, $prefix)) {
@@ -16,7 +16,7 @@ class NsNameTransformer
         return $value;
     }
 
-    public static function reset($value)
+    public static function reset($value): string
     {
         $prefix = config('k8s.ns_prefix');
 

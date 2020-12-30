@@ -25,7 +25,7 @@ class Ns extends Model
         return $this->hasMany(Project::class);
     }
 
-    public function uninstall(Project $project)
+    public function uninstall(Project $project): bool
     {
         if (HelmApi::uninstall($this->name, $project->name)) {
             $project->delete();
@@ -36,7 +36,7 @@ class Ns extends Model
         return false;
     }
 
-    public function hasProject(string $project)
+    public function hasProject(string $project): bool
     {
         // todo 是否需要校验k8s api？
         return in_array($project, $this->projects->pluck('name')->toArray());

@@ -25,6 +25,11 @@ class Project extends Model
         return $this->belongsTo(Ns::class, 'ns_id');
     }
 
+    public function config()
+    {
+        return $this->hasOne(ProjectConfig::class);
+    }
+
     public function getEnvFileTypeAttribute()
     {
         return data_get($this->config_snapshot, 'config_file_type', '');
