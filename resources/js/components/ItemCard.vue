@@ -265,16 +265,15 @@
                                         <ul>
                                             <li
                                                 style="margin-left: 30px"
-                                                v-for="(link,
-                                                index) in project.links"
+                                                v-for="(link, index) in project.links"
                                                 :key="index"
                                             >
                                                 <el-link
                                                     type="success"
                                                     :href="link"
-                                                    target="_blank"
-                                                    >{{ link }}</el-link
-                                                >
+                                                    target="_blank">
+                                                    {{ link }}
+                                                </el-link>
                                             </li>
                                         </ul>
                                     </div>
