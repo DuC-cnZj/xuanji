@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\Ns;
 use App\Models\Project;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
 use App\Transformers\NsNameTransformer;
 
@@ -328,7 +330,7 @@ DATA;
         });
     }
 
-    public function getProjectServices(Project $project, $key = null)
+    public function getProjectServices(Project $project, $key = null): array
     {
         $namespace = NsNameTransformer::transform($project->namespace->name);
 
@@ -343,6 +345,64 @@ DATA;
                     ->json($key)
             ),
         ];
+    }
+
+    public function nodePortUrls(Project $project): array
+    {
+        $res = $this->getProjectServices($project, 'items');
+
+        return collect($res)
+            ->map
+            ->filter(function ($item) {
+                return Arr::get($item, 'spec.type') == 'NodePort' && count(Arr::get($item, 'spec.ports')) >= 1;
+            })
+            ->map
+            ->map(function ($item) {
+                $host = Arr::get($item, 'status.loadBalancer.ingress.0.hostname') ?? config('k8s.cluster_ip');
+
+                return collect(Arr::get($item, 'spec.ports', []))->map(function ($data) use ($host) {
+                    $protocol = 'http://';
+
+                    if (Str::contains(strtolower(Arr::get($data, 'name')), ['tcp', 'rpc', 'grpc'])) {
+                        $protocol = 'tcp://';
+                    }
+
+                    return $protocol . $host . ':' . Arr::get($data, 'nodePort');
+                });
+            })
+            ->flatten(1)
+            ->values()
+            ->toArray();
+    }
+
+    public function ingressUrls(Project $project): array
+    {
+        $res = $this->getProjectIngress($project, 'items.*.spec');
+
+        $https = collect($res)
+            ->map
+            ->pluck('tls.*.hosts')
+            ->mapWithKeys(function ($item, $project) {
+                return [
+                    $project => collect($item)
+                        ->flatten()
+                        ->filter()
+                        ->values()
+                        ->map(fn ($url) => 'https://' . $url), ];
+            })->toArray();
+        $http = collect($res)
+            ->map
+            ->pluck('rules.*.host')
+            ->mapWithKeys(function ($item, $project) {
+                return [
+                    $project => collect($item)
+                        ->flatten()
+                        ->filter()
+                        ->values()
+                        ->map(fn ($url) => 'http://' . $url), ];
+            })->toArray();
+
+        return [$https, $http];
     }
 
     private function http()

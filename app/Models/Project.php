@@ -35,6 +35,11 @@ class Project extends Model
         return data_get($this->config_snapshot, 'config_file_type', '');
     }
 
+    public function getAllPodReadyAttribute()
+    {
+        return $this->allPodReady();
+    }
+
     public function detail()
     {
         $data = app(K8sApi::class)->getPods(
@@ -75,80 +80,6 @@ class Project extends Model
         return array_merge_recursive($nodePorts, $https, $http);
     }
 
-    /**
-     * @param K8sApi $k8sApi
-     * @return array
-     *
-     * @author duc <1025434218@qq.com>
-     */
-    protected function nodePorts(K8sApi $k8sApi): array
-    {
-        $res = $k8sApi->getProjectServices($this, 'items');
-
-        return collect($res)
-            ->map
-            ->filter(function ($item) {
-                return Arr::get($item, 'spec.type') == 'NodePort' && count(Arr::get($item, 'spec.ports')) >= 1;
-            })
-            ->map
-            ->map(function ($item) {
-                $host = Arr::get($item, 'status.loadBalancer.ingress.0.hostname') ?? config('k8s.cluster_ip');
-
-                return collect(Arr::get($item, 'spec.ports', []))->map(function ($data) use ($host) {
-                    $protocol = "http://";
-
-                    if (Str::contains(strtolower(Arr::get($data, 'name')), ['tcp', 'rpc', 'grpc'])) {
-                        $protocol = "tcp://";
-                    }
-
-                    return $protocol . $host . ':' . Arr::get($data, 'nodePort');
-                });
-            })
-            ->flatten(1)
-            ->values()
-            ->toArray();
-    }
-
-    /**
-     * @param K8sApi $k8sApi
-     * @return array
-     *
-     * @author duc <1025434218@qq.com>
-     */
-    protected function ingresses(K8sApi $k8sApi): array
-    {
-        $res = $k8sApi->getProjectIngress($this, 'items.*.spec');
-        $https = collect($res)
-            ->map
-            ->pluck('tls.*.hosts')
-            ->mapWithKeys(function ($item, $project) {
-                return [
-                    $project => collect($item)
-                        ->flatten()
-                        ->filter()
-                        ->values()
-                        ->map(fn ($url) => 'https://' . $url), ];
-            })->toArray();
-        $http = collect($res)
-            ->map
-            ->pluck('rules.*.host')
-            ->mapWithKeys(function ($item, $project) {
-                return [
-                    $project => collect($item)
-                        ->flatten()
-                        ->filter()
-                        ->values()
-                        ->map(fn ($url) => 'http://' . $url), ];
-            })->toArray();
-
-        return [$https, $http];
-    }
-
-    public function getAllPodReadyAttribute()
-    {
-        return $this->allPodReady();
-    }
-
     public function allPodReady(): bool
     {
         /** @var K8sApi $k8sApi */
@@ -169,5 +100,27 @@ class Project extends Model
             )->flatten(1)->values();
 
         return ! $res->contains('ready', false);
+    }
+
+    /**
+     * @param K8sApi $k8sApi
+     * @return array
+     *
+     * @author duc <1025434218@qq.com>
+     */
+    protected function nodePorts(K8sApi $k8sApi): array
+    {
+        return $k8sApi->nodePortUrls($this);
+    }
+
+    /**
+     * @param K8sApi $k8sApi
+     * @return array
+     *
+     * @author duc <1025434218@qq.com>
+     */
+    protected function ingresses(K8sApi $k8sApi): array
+    {
+        return $k8sApi->ingressUrls($this);
     }
 }
