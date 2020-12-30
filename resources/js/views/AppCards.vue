@@ -154,7 +154,10 @@
                                 :allReady="p.all_pod_ready"
                                 :name="p.name"
                                 :namespace="project.namespace"
+                                :gitlabProjectId="p.project_id"
                                 :code.sync="p.env"
+                                :branch.sync="p.branch"
+                                :commit.sync="p.commit"
                                 :codeType.sync="p.env_file_type"
                                 :projectId="p.id"
                                 :nsId="project.id"
@@ -205,31 +208,8 @@
             :before-close="handleClose"
         >
             <sync-config />
-            <div v-if="showPipeline">
-                <el-alert
-                    style="font-size: 12px;margin-bottom: 10px"
-                    :type="
-                        pipelineVars[deployForm.pipelineInfo['0']['status']]
-                            .alertType
-                    "
-                    :title="
-                        pipelineVars[deployForm.pipelineInfo['0']['status']]
-                            .alertTitle
-                    "
-                    show-icon
-                >
-                    <el-link
-                        target="_blank"
-                        style="font-size: 12px"
-                        :type="
-                            pipelineVars[deployForm.pipelineInfo['0']['status']]
-                                .linkType
-                        "
-                        :href="deployForm.pipelineInfo['0']['web_url']"
-                        >点击查看 pipeline 详细信息</el-link
-                    >
-                </el-alert>
-            </div>
+
+            <pipeline-info :project="this.deployForm.project.id" :branch="this.deployForm.branch" :commit="this.deployForm.commit"></pipeline-info>
             <el-form
                 label-width="80px"
                 :model="deployForm"
@@ -286,7 +266,6 @@
                         reserve-keyword
                         placeholder="请选择"
                         @focus="getCommits"
-                        @change="changeCommit"
                         style="width: 80%"
                         :loading="loading"
                     >
@@ -326,13 +305,13 @@ import ItemCard from "../components/ItemCard";
 import Editor from "../components/Editor";
 import SyncConfig from "../components/SyncConfig";
 import MarkdownEditor from "../components/MarkdownEditor";
+import PipelineInfo from "../components/PipelineInfo";
 
 import {
     gitlabBranches,
     branchCommits,
     gitlabProject,
-    getEnvFileContent,
-    pipeline
+    getEnvFileContent
 } from "../api/gitlab";
 import { updateConfigTips, getConfigTips } from "../api/config";
 import {
@@ -346,30 +325,13 @@ import { deploy, uninstall } from "../api/helm";
 
 export default {
     name: "AppCards",
-    components: { ItemCard, Editor, SyncConfig, MarkdownEditor },
+    components: { ItemCard, Editor, SyncConfig, MarkdownEditor, PipelineInfo },
     data() {
         return {
             tip: "",
             tipMd: "",
             configTipsEditorVisable: false,
             configVisable: false,
-            pipelineVars: {
-                failed: {
-                    alertType: "error",
-                    alertTitle: "pipeline 执行失败",
-                    linkType: "danger"
-                },
-                success: {
-                    alertType: "success",
-                    alertTitle: "pipeline 执行成功",
-                    linkType: "success"
-                },
-                running: {
-                    alertType: "warning",
-                    alertTitle: "pipeline 还在执行中",
-                    linkType: "warning"
-                }
-            },
             btnLoading: false,
             fullscreenLoading: false,
             nsCenterDialogVisible: false,
@@ -410,23 +372,8 @@ export default {
                 branch: "",
                 code: "",
                 codeType: "",
-                pipelineInfo: []
             }
         };
-    },
-    computed: {
-        showPipeline() {
-            if (this.deployForm.pipelineInfo.length > 0) {
-                if (
-                    Object.keys(this.pipelineVars).includes(
-                        this.deployForm.pipelineInfo["0"]["status"]
-                    )
-                ) {
-                    return true;
-                }
-            }
-            return false;
-        }
     },
     created() {
         this.configVisable = this.isConfigVisable()
@@ -539,7 +486,6 @@ export default {
             this.deployForm.commit = "";
             this.deployForm.code = "";
             this.deployForm.codeType = "";
-            this.deployForm.pipelineInfo = [];
             this.getEnvFileContent();
         },
         async getCommits() {
@@ -557,14 +503,6 @@ export default {
             );
             this.commits = data;
             this.loading = false;
-        },
-        async changeCommit(commit) {
-            const { data } = await pipeline(
-                this.deployForm.project.id,
-                this.deployForm.branch,
-                commit
-            );
-            this.deployForm.pipelineInfo = data;
         },
         async getEnvFileContent() {
             if (!this.deployForm.code) {
@@ -597,7 +535,6 @@ export default {
             });
             this.deployForm.branch = "";
             this.deployForm.commit = "";
-            this.deployForm.pipelineInfo = [];
         },
         handleClose(done) {
             done();
@@ -673,7 +610,6 @@ export default {
             this.deployForm.code = "";
             this.deployForm.codeType = "";
             this.deployForm.commit = "";
-            this.deployForm.pipelineInfo = [];
         }
     }
 };

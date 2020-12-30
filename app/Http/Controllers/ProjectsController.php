@@ -74,15 +74,18 @@ class ProjectsController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param Project $project
      * @param ChartValuesImp $imp
-     * @param HelmApi $helmApi
-     * @param GitlabApi $gitlabApi
      * @return array
      * @throws \Exception
      */
-    public function update(Ns $namespace, Request $request, Project $project, ChartValuesImp $imp, HelmApi $helmApi, GitlabApi $gitlabApi)
+    public function update(Ns $namespace, Request $request, Project $project, ChartValuesImp $imp)
     {
-        $branch = $project->branch;
-        $commit = $project->commit;
+        $input = $this->validate($request, [
+            'branch' => 'required',
+            'commit' => 'required',
+        ]);
+
+        $branch = $request->branch;
+        $commit = $request->commit;
         $projectId = $project->project_id;
         $env = $request->env ?? '';
         /** @var ProjectConfig $config */
@@ -93,6 +96,8 @@ class ProjectsController extends Controller
         $this->upgradeOrInstall($config, $projectId, $branch, $commit, $namespace, $env, $project->name);
 
         $project->update([
+            'branch'          => $input['branch'],
+            'commit'          => $input['commit'],
             'env'             => $imp->getEnv(),
             'config_snapshot' => $config->toArray(),
         ]);

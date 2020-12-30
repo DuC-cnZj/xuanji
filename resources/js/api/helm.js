@@ -6,9 +6,11 @@ export const deploy = (ns, form) => {
     })
 }
 
-export const deployUpgrade = (ns, project, env) => {
+export const deployUpgrade = (ns, project, env, branch, commit) => {
     return axios.put(`/namespaces/${ns}/projects/${project}`, {
-        env: env
+        env: env,
+        branch: branch,
+        commit: commit,
     })
 }
 

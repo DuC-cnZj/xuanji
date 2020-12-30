@@ -27,7 +27,7 @@ class NamespacesController extends Controller
                     'owned'     => auth()->id() == $ns->user_id,
                     'id'        => $ns->id,
                     'namespace' => $ns->name,
-                    'projects'  => $ns->projects->map->only('id', 'env', 'name', 'env_file_type', 'all_pod_ready')->toArray(),
+                    'projects'  => $ns->projects->map->only('id', 'env', 'name', 'env_file_type', 'all_pod_ready', 'project_id', 'commit', 'branch')->toArray(),
                     'links'     => collect($ns->projects->map->getExternalIps())->flatten()->values()->toArray(),
                     'usage'     => $this->usage($ns, $k8sApi),
                 ];

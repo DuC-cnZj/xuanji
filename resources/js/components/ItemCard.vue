@@ -1,5 +1,5 @@
 <template>
-    <div class="case-dialog-div">
+    <div :class="activeCard ? 'active-case-dialog-div' : 'inactive-case-dialog-div'" @click="active">
         <transition>
             <el-dialog
                 :title="name + '(' + namespace + ')'"
@@ -101,12 +101,57 @@
                     <!-- 配置更新 -->
                     <el-tab-pane label="配置更新" name="config">
                         <sync-config />
+                        <pipeline-info :project="gitlabProjectId" :branch="deployForm.branch" :commit="deployForm.commit"></pipeline-info>
                         <el-form
                             :model="deployForm"
                             :rules="deployRules"
                             ref="deployForm"
+                            label-width="auto"
                         >
-                            <el-form-item prop="env" size="100%">
+
+                            <el-form-item label="branch" prop="branch">
+                                <el-select
+                                    v-model="deployForm.branch"
+                                    reserve-keyword
+                                    filterable
+                                    placeholder="请选择"
+                                    @focus="getBranches"
+                                    style="width: 80%"
+                                    @change="changeBranch"
+                                    :loading="loading"
+                                >
+                                    <el-option
+                                        v-for="item in branches"
+                                        :key="item.name"
+                                        :label="item.name"
+                                        :value="item.name"
+                                    >
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+
+                            <el-form-item label="commit" prop="commit">
+                                <el-select
+                                    v-model="deployForm.commit"
+                                    filterable
+                                    reserve-keyword
+                                    placeholder="请选择"
+                                    @focus="getCommits"
+                                    @change="changeCommit"
+                                    style="width: 80%"
+                                    :loading="loading"
+                                >
+                                    <el-option
+                                        v-for="item in commits"
+                                        :key="item.id"
+                                        :label="item.msg"
+                                        :value="item.id"
+                                    >
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+
+                            <el-form-item prop="env">
                                 <editor :code.sync="deployForm.code" :type="deployForm.codeType"></editor>
                             </el-form-item>
                             <el-form-item>
@@ -350,6 +395,7 @@ import elDragDialogWidth from "../directive/el-drag-dialog-width";
 import Editor from "./Editor";
 import Shell from "./Shell";
 import SyncConfig from "./SyncConfig";
+import PipelineInfo from "./PipelineInfo";
 
 import { deployUpgrade } from "../api/helm";
 import {
@@ -358,9 +404,13 @@ import {
     getNamespacesUsage,
     getProjectDetail
 } from "../api/k8s";
+import {branchCommits, gitlabBranches, pipeline} from "../api/gitlab";
 
 export default {
     props: [
+        "gitlabProjectId",
+        "branch",
+        "commit",
         "allReady",
         "name",
         "namespace",
@@ -373,7 +423,7 @@ export default {
     ],
     name: "ItemCard",
     directives: { elDragDialog, elDragDialogWidth },
-    components: { Editor, Shell, SyncConfig },
+    components: { Editor, Shell, SyncConfig, PipelineInfo },
     computed: {
         currentContainer() {
             let [pod, container] = this.shell.current.split("::");
@@ -386,9 +436,18 @@ export default {
     },
     created() {
         this.log.allReady = this.allReady
+        window.EventBus.$on("item-card-click", res => {
+            if (res !== this.uniqueId()) {
+                this.activeCard = false
+            }
+        });
     },
     data() {
         return {
+            activeCard: false,
+            loading: false,
+            branches: [],
+            commits: [],
             detail: null,
             log: {
                 current: "",
@@ -405,6 +464,8 @@ export default {
             btnLoading: false,
             fullscreenLoading: false,
             deployForm: {
+                branch: "",
+                commit: "",
                 code: "",
                 codeType: this.codeType
             },
@@ -417,6 +478,46 @@ export default {
         };
     },
     methods: {
+        active() {
+            this.activeCard = true
+            window.EventBus.$emit("item-card-click", this.uniqueId())
+        },
+        async getBranches() {
+            this.loading = true;
+            const { data } = await gitlabBranches(this.gitlabProjectId);
+            this.branches = data;
+            this.loading = false;
+        },
+        changeBranch() {
+            this.deployForm.commit = "";
+        },
+        async getCommits() {
+            if (!this.deployForm.branch) {
+                this.$notify.error({
+                    title: "错误",
+                    message: "分支必选"
+                });
+                return;
+            }
+            this.loading = true;
+            const { data } = await branchCommits(
+                this.gitlabProjectId,
+                this.deployForm.branch
+            );
+            this.commits = data;
+            this.loading = false;
+        },
+        async changeCommit(commit) {
+            const { data } = await pipeline(
+                this.gitlabProjectId,
+                this.deployForm.branch,
+                commit
+            );
+            this.deployForm.pipelineInfo = data;
+        },
+        uniqueId() {
+          return this.gitlabProjectId + "-" + this.projectId + "-" + this.nsId
+        },
         closeDialog() {
             this.shellEnabled = false;
             console.log("close");
@@ -464,6 +565,8 @@ export default {
             switch (tab.name) {
                 case "config":
                     this.shellEnabled = false;
+                    this.deployForm.branch = this.branch;
+                    this.deployForm.commit = this.commit;
                     this.deployForm.code = this.code;
                     this.deployForm.codeType = this.codeType;
                     break;
@@ -516,6 +619,8 @@ export default {
             this.uninstallDialogVisible = true;
         },
         cancel() {
+            this.deployForm.branch = this.branch;
+            this.deployForm.commit = this.commit;
             this.deployForm.code = this.code;
         },
         handleClick(tab, event) {
@@ -523,11 +628,16 @@ export default {
         },
         deploy() {
             this.btnLoading = true;
-            deployUpgrade(this.nsId, this.projectId, this.deployForm.code)
+            deployUpgrade(this.nsId, this.projectId, this.deployForm.code, this.deployForm.branch, this.deployForm.commit)
                 .then(res => {
                     this.$emit("update:code", res.data.env);
+                    this.$emit("update:branch", res.data.branch);
+                    this.$emit("update:commit", res.data.commit);
+                    this.deployForm.branch = res.data.branch;
+                    this.deployForm.commit = res.data.commit;
                     this.deployForm.code = res.data.env;
                     this.deployForm.codeType = res.data.config_snapshot.config_file_type;
+
                     this.$notify.success("配置更新成功");
                     this.btnLoading = false;
                 })
@@ -535,12 +645,6 @@ export default {
                     this.btnLoading = false;
                 });
         },
-        resetDeployForm() {
-            this.deployForm = {
-                code: "",
-                codeType: ""
-            };
-        }
     }
 };
 </script>
@@ -562,11 +666,20 @@ export default {
 #logcontent::-webkit-scrollbar-thumb:hover {
     background: rgba(157, 165, 183, 0.7);
 }
-.case-dialog-class {
+
+.case-dialog-class  {
     pointer-events: auto;
 }
 
-.case-dialog-div > .el-dialog__wrapper {
+.inactive-case-dialog-div  > .el-dialog__wrapper {
     pointer-events: none;
+}
+
+.active-case-dialog-div  > .el-dialog__wrapper {
+    pointer-events: none;
+}
+
+.active-case-dialog-div /deep/ .el-dialog__wrapper {
+    z-index: 9999 !important;
 }
 </style>

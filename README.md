@@ -27,9 +27,3 @@ default_values: # 默认的 chart values 配置 默认 空, 可选
 branches: # 配置的分支 默认 *, 可选
   - "*"
 ```
-
-
-## TODO
-
-1. 可以更新 commit
-2. z-index 调整
