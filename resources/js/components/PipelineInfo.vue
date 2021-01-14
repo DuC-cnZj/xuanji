@@ -75,11 +75,13 @@ export default {
             if (!this.commit) {
                 return
             }
+            this.loading = true
             const { data } = await pipeline(
                 this.project,
                 this.branch,
                 this.commit,
             );
+            this.loading = false
             this.pipelineInfo = data;
             if (this.pipelineInfo.length > 0) {
                 this.webUrl = data['0']['web_url']
