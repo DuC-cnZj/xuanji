@@ -212,7 +212,13 @@
         >
             <sync-config />
 
-            <pipeline-info :project="this.deployForm.project.id" :branch="this.deployForm.branch" :commit="this.deployForm.commit"></pipeline-info>
+            <pipeline-info
+                v-show="this.deployForm.project.id"
+                :project="this.deployForm.project.id"
+                :branch="this.deployForm.branch"
+                :commit="this.deployForm.commit">
+            </pipeline-info>
+
             <el-form
                 label-width="80px"
                 :model="deployForm"
