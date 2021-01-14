@@ -216,7 +216,7 @@ LOG
             $chartName = Str::of($config->local_chart)->explode('/')->last();
 
             try {
-                $chartTgzData = $gitlabApi->getProjectFile($projectId, 'master', $config->local_chart);
+                $chartTgzData = $gitlabApi->getProjectFile($projectId, $branch, $config->local_chart);
                 if ($chartTgzData) {
                     $ok = $helmApi->uploadChart($chartTgzData, $chartName);
 
