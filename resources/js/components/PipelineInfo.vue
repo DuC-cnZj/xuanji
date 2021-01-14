@@ -6,14 +6,6 @@
             :title="pipelineVars[status].alertTitle"
             show-icon
         >
-            <el-button
-                type="info"
-                icon="el-icon-refresh-right"
-                style="padding: 5px;"
-                circle
-                :loading="loading"
-                @click="fetchPipelineInfo"
-            ></el-button>
             <el-link
                 target="_blank"
                 style="font-size: 12px"
@@ -21,6 +13,15 @@
                 :href="webUrl"
             >点击查看 pipeline 详细信息
             </el-link>
+            <el-button
+                size="mini"
+                type="info"
+                icon="el-icon-refresh-right"
+                style="padding: 5px;"
+                circle
+                :loading="loading"
+                @click="fetchPipelineInfo"
+            ></el-button>
         </el-alert>
     </div>
 </template>
