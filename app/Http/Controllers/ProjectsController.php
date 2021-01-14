@@ -212,7 +212,6 @@ LOG
         $helmApi = app(HelmApi::class);
         $imp = app(ChartValuesImp::class);
 
-        $installed = false;
         if ($config->preferLocalChart()) {
             $chartName = Str::of($config->local_chart)->explode('/')->last();
 
@@ -237,36 +236,26 @@ LOG
                         ->setEnv($env);
 
                     $helmApi->deploy($namespace->name, $projectName, $imp);
-                    $installed = true;
                 }
             } catch (\Exception $e) {
-                logger()->error('error install use local_chart', [
-                    'chartName'   => $chartName,
-                    'local_chart' => $config->local_chart,
-                    'error'       => $e->getMessage(),
-                ]);
-            } finally {
-                if (! $installed) {
-                    if (! $config->chartConfigured()) {
-                        throw new \Exception('chart 未配置');
-                    }
-
-                    $config->refreshRepo();
-
-                    $imp
-                        ->setChart($config->chart)
-                        ->setChartVersion($config->chart_version)
-                        ->setDefaultValues($config->default_values)
-                        ->setTag($config->replaceVars($branch, $commit))
-                        ->setRepository($config->repository)
-                        ->setEnvFileType($config->config_file_type)
-                        ->setEnvValuesPrefix($config->config_field)
-                        ->setIsSimpleEnv($config->is_simple_env)
-                        ->setImagePullSecrets($namespace->image_pull_secrets ?? [])
-                        ->setEnv($env);
-
-                    $helmApi->deploy($namespace->name, $projectName, $imp);
+                if (! $config->chartConfigured()) {
+                    throw new \Exception(sprintf('chart name: %s, local_chart: %s, error: %s.', $chartName, $config->local_chart, $e->getMessage()));
                 }
+                $config->refreshRepo();
+
+                $imp
+                    ->setChart($config->chart)
+                    ->setChartVersion($config->chart_version)
+                    ->setDefaultValues($config->default_values)
+                    ->setTag($config->replaceVars($branch, $commit))
+                    ->setRepository($config->repository)
+                    ->setEnvFileType($config->config_file_type)
+                    ->setEnvValuesPrefix($config->config_field)
+                    ->setIsSimpleEnv($config->is_simple_env)
+                    ->setImagePullSecrets($namespace->image_pull_secrets ?? [])
+                    ->setEnv($env);
+
+                $helmApi->deploy($namespace->name, $projectName, $imp);
             }
         }
     }
