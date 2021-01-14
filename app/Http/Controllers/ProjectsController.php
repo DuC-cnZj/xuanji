@@ -215,28 +215,27 @@ LOG
         if ($config->preferLocalChart()) {
             $chartName = Str::of($config->local_chart)->explode('/')->last();
 
+            if (! $chartTgzData = $gitlabApi->getProjectFile($projectId, $branch, $config->local_chart)) {
+                throw new \Exception(sprintf('tgz not found in project: %d, branch %s, path %s.', $projectId, $branch, $config->local_chart));
+            }
+
+            if (! $helmApi->uploadChart($chartTgzData, $chartName)) {
+                throw new \Exception("can't upload chart");
+            }
+
             try {
-                $chartTgzData = $gitlabApi->getProjectFile($projectId, $branch, $config->local_chart);
-                if ($chartTgzData) {
-                    $ok = $helmApi->uploadChart($chartTgzData, $chartName);
+                $imp
+                    ->setChart($chartName)
+                    ->setDefaultValues($config->default_values)
+                    ->setTag($config->replaceVars($branch, $commit))
+                    ->setRepository($config->repository)
+                    ->setEnvFileType($config->config_file_type)
+                    ->setEnvValuesPrefix($config->config_field)
+                    ->setIsSimpleEnv($config->is_simple_env)
+                    ->setImagePullSecrets($namespace->image_pull_secrets ?? [])
+                    ->setEnv($env);
 
-                    if (! $ok) {
-                        throw new \Exception("can't upload chart");
-                    }
-
-                    $imp
-                        ->setChart($chartName)
-                        ->setDefaultValues($config->default_values)
-                        ->setTag($config->replaceVars($branch, $commit))
-                        ->setRepository($config->repository)
-                        ->setEnvFileType($config->config_file_type)
-                        ->setEnvValuesPrefix($config->config_field)
-                        ->setIsSimpleEnv($config->is_simple_env)
-                        ->setImagePullSecrets($namespace->image_pull_secrets ?? [])
-                        ->setEnv($env);
-
-                    $helmApi->deploy($namespace->name, $projectName, $imp);
-                }
+                $helmApi->deploy($namespace->name, $projectName, $imp);
             } catch (\Exception $e) {
                 if (! $config->chartConfigured()) {
                     throw new \Exception(sprintf('chart name: %s, local_chart: %s, error: %s.', $chartName, $config->local_chart, $e->getMessage()));
