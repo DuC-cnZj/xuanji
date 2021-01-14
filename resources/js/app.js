@@ -2,11 +2,13 @@ import Vue from 'vue';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import DucHighlight from './directive/highlight'
+import VueClipboard from 'vue-clipboard2'
 
 require('./bootstrap');
 window.Vue = require('vue');
 window.EventBus = new Vue();
 
+Vue.use(VueClipboard)
 Vue.use(DucHighlight)
 Vue.use(ElementUI);
 

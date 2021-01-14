@@ -111,6 +111,7 @@
                                             target="_blank">
                                             {{ link }}
                                         </el-link>
+                                        <i class="el-icon-document-copy" style="cursor: pointer;" @click="copy(link)"></i>
                                     </div>
                                 </div>
                                 <i class="el-icon-link" slot="reference"></i>
@@ -391,6 +392,9 @@ export default {
         this.getConfigTips();
     },
     methods: {
+        copy(text) {
+            this.$copyText(text).then(e => this.$notify.success("复制成功"))
+        },
         isConfigVisable() {
             return window.localStorage.getItem("configVisable") === "on"
         },

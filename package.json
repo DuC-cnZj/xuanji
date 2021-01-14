@@ -31,6 +31,7 @@
         "font-awesome": "4.7.0",
         "highlight.js": "^10.2.0",
         "rxjs": "^6.6.3",
+        "vue-clipboard2": "^0.3.1",
         "vue-codemirror": "^4.0.6",
         "xterm": "^4.9.0",
         "xterm-addon-fit": "^0.4.0"
