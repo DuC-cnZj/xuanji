@@ -100,7 +100,6 @@
 
                     <!-- 配置更新 -->
                     <el-tab-pane label="配置更新" name="config">
-                        <sync-config />
                         <pipeline-info :project="gitlabProjectId" :branch="deployForm.branch" :commit="deployForm.commit"></pipeline-info>
                         <el-form
                             :model="deployForm"
@@ -401,7 +400,6 @@ import elDragDialog from "../directive/el-drag-dialog";
 import elDragDialogWidth from "../directive/el-drag-dialog-width";
 import Editor from "./Editor";
 import Shell from "./Shell";
-import SyncConfig from "./SyncConfig";
 import PipelineInfo from "./PipelineInfo";
 
 import { deployUpgrade } from "../api/helm";
@@ -430,7 +428,7 @@ export default {
     ],
     name: "ItemCard",
     directives: { elDragDialog, elDragDialogWidth },
-    components: { Editor, Shell, SyncConfig, PipelineInfo },
+    components: { Editor, Shell, PipelineInfo },
     computed: {
         currentContainer() {
             let [pod, container] = this.shell.current.split("::");
