@@ -129,7 +129,7 @@
                                 <i
                                     class="el-icon-cpu"
                                     @mouseover="
-                                        getNamespacesUsage(project.id, i)
+                                        getNamespacesUsage(project.id, index)
                                     "
                                 ></i>
                             </el-tooltip>
