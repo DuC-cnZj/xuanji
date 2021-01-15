@@ -240,7 +240,7 @@
                         <el-option
                             v-for="item in gitlabProjects"
                             :key="item.id"
-                            :label="item.name"
+                            :label="item.name_with_namespace"
                             :loading="loading"
                             :value="item.id"
                         >

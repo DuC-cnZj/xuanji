@@ -37,7 +37,7 @@ class ProjectsController extends Controller
      */
     public function deploy(Ns $namespace, Request $request)
     {
-        $project = Str::slug($request->project);
+        $project = Str::slug($request->project . '-' . substr(md5($request->project_id), 0, 2));
         $projectId = $request->project_id;
         $branch = $request->branch;
         $commit = $request->commit;
