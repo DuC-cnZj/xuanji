@@ -133,7 +133,8 @@ class Project extends Model
         $sameStarts = static::query()
             ->where('name', 'like', $this->name . '%')
             ->pluck('name')
-            ->filter(fn ($name) => $name == $this->name);
+            ->filter(fn ($name) => $name != $this->name)
+            ->toArray();
 
         return collect(app(K8sApi::class)->getPods($this->namespace->name, null, 'items.*.metadata'))
             ->filter(fn ($data) => $data['ownerReferences'][0]['kind'] != 'Job' && Str::startsWith($data['name'], $this->name) && ! Str::startsWith($data['name'], $sameStarts))
