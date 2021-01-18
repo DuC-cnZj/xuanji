@@ -211,15 +211,15 @@ LOG
 
         $chartName = Str::of($config->local_chart)->explode('/')->last();
 
-        if (! $chartTgzData = $gitlabApi->getProjectFile($projectId, $branch, $config->local_chart)) {
-            throw new \Exception(sprintf('tgz not found in project: %d, branch %s, path %s.', $projectId, $branch, $config->local_chart));
-        }
-
-        if (! $helmApi->uploadChart($chartTgzData, $chartName)) {
-            throw new \Exception("can't upload chart");
-        }
-
         if ($config->preferLocalChart()) {
+            if (! $chartTgzData = $gitlabApi->getProjectFile($projectId, $branch, $config->local_chart)) {
+                throw new \Exception(sprintf('tgz not found in project: %d, branch %s, path %s.', $projectId, $branch, $config->local_chart));
+            }
+
+            if (! $helmApi->uploadChart($chartTgzData, $chartName)) {
+                throw new \Exception("can't upload chart");
+            }
+
             try {
                 $imp
                     ->setChart($chartName)
