@@ -131,12 +131,12 @@ class Project extends Model
     public function podNamesWithoutJob(): array
     {
         $sameStarts = static::query()
-            ->where('name', "like", $this->name . "%")
+            ->where('name', 'like', $this->name . '%')
             ->pluck('name')
             ->filter(fn ($name) => $name == $this->name);
 
         return collect(app(K8sApi::class)->getPods($this->namespace->name, null, 'items.*.metadata'))
-            ->filter(fn($data) => $data['ownerReferences'][0]['kind'] != 'Job' && Str::startsWith($data['name'], $this->name) && !Str::startsWith($data['name'], $sameStarts))
+            ->filter(fn ($data) => $data['ownerReferences'][0]['kind'] != 'Job' && Str::startsWith($data['name'], $this->name) && ! Str::startsWith($data['name'], $sameStarts))
             ->pluck('name')
             ->toArray();
     }
