@@ -209,9 +209,9 @@ LOG
         $helmApi = app(HelmApi::class);
         $imp = app(ChartValuesImp::class);
 
-        $chartName = Str::of($config->local_chart)->explode('/')->last();
-
         if ($config->preferLocalChart()) {
+            $chartName = Str::of($config->local_chart)->explode('/')->last();
+
             if (! $chartTgzData = $gitlabApi->getProjectFile($projectId, $branch, $config->local_chart)) {
                 throw new \Exception(sprintf('tgz not found in project: %d, branch %s, path %s.', $projectId, $branch, $config->local_chart));
             }
@@ -239,7 +239,7 @@ LOG
         }
 
         if (! $config->chartConfigured()) {
-            throw new \Exception(sprintf('chart name: %s, local_chart: %s, error: %s.', $chartName, $config->local_chart, $e->getMessage()));
+            throw new \Exception(sprintf('chart name: %s, local_chart: %s, error: %s.', $config->chart, $config->local_chart, $e->getMessage()));
         }
         $config->refreshRepo();
 
