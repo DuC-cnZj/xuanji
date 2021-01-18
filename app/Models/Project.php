@@ -86,10 +86,7 @@ class Project extends Model
     {
         /** @var K8sApi $k8sApi */
         $k8sApi = app(K8sApi::class);
-        $pods = collect($k8sApi->getPods($this->namespace->name, null, 'items.*.metadata'))
-            ->filter(fn ($data) => $data['ownerReferences'][0]['kind'] != 'Job' && Str::contains($data['name'], $this->name))
-            ->pluck('name')
-            ->toArray();
+        $pods = $this->podNamesWithoutJob();
 
         $res = collect($pods)
             ->map(
@@ -124,5 +121,23 @@ class Project extends Model
     protected function ingresses(K8sApi $k8sApi): array
     {
         return $k8sApi->ingressUrls($this);
+    }
+
+    /**
+     * @return array
+     *
+     * @author duc <1025434218@qq.com>
+     */
+    public function podNamesWithoutJob(): array
+    {
+        $sameStarts = static::query()
+            ->where('name', "like", $this->name . "%")
+            ->pluck('name')
+            ->filter(fn ($name) => $name == $this->name);
+
+        return collect(app(K8sApi::class)->getPods($this->namespace->name, null, 'items.*.metadata'))
+            ->filter(fn($data) => $data['ownerReferences'][0]['kind'] != 'Job' && Str::startsWith($data['name'], $this->name) && !Str::startsWith($data['name'], $sameStarts))
+            ->pluck('name')
+            ->toArray();
     }
 }

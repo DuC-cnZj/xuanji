@@ -124,12 +124,7 @@ class ProjectsController extends Controller
         $log = '';
         $current = $request->current;
 
-        $pods = $k8sApi->getPods($namespace->name, null, 'items.*.metadata');
-
-        $pods = collect($pods)
-            ->filter(fn ($data) => $data['ownerReferences'][0]['kind'] != 'Job' && Str::contains($data['name'], $project->name))
-            ->pluck('name')
-            ->toArray();
+        $pods = $project->podNamesWithoutJob();
 
         $res = collect($pods)
             ->map(
