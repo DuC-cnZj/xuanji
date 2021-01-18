@@ -129,6 +129,24 @@ class K8sApi
         return $res->json($key);
     }
 
+    /**
+     * /apis/apps/v1/namespaces/{namespace}/deployments/{name}
+     *
+     * @param $ns
+     * @param $name
+     * @param null $key
+     * @return array|mixed
+     * @author duc <1025434218@qq.com>
+     */
+    public function showDeployments(string $ns, string $name, $key = null)
+    {
+        $ns = NsNameTransformer::transform($ns);
+
+        $res = $this->http()->get("/apis/apps/v1/namespaces/{$ns}/deployments/{$name}");
+
+        return $res->json($key);
+    }
+
     public function getDeploymentsByLabelSelector($ns, string $labels = null, $key = null)
     {
         $ns = NsNameTransformer::transform($ns);

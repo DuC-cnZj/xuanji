@@ -60,10 +60,11 @@ class HelmApi
      * @param $ns
      * @param $release
      * @param ChartValuesImp $imp
+     * @param string $jsonKey
      * @return bool
      * @throws \Exception
      */
-    public function upgrade($ns, $release, ChartValuesImp $imp)
+    public function upgrade($ns, $release, ChartValuesImp $imp, $jsonKey = 'data')
     {
         $this->repoUpdate();
         $nsCopy = $ns;
@@ -123,7 +124,7 @@ class HelmApi
         }
 
         if ($res->successful() && $res->json('code') == 0) {
-            return true;
+            return $res->json($jsonKey);
         }
 
         throw new \Exception($res->body());
