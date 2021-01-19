@@ -125,6 +125,12 @@ class HelmApi
 
         if ($res->successful() && $res->json('code') == 0) {
             return $res->json($jsonKey);
+        } else {
+            try {
+                $this->uninstall($ns, $release);
+            } catch (\Exception $e) {
+                Log::error($e->getMessage());
+            }
         }
 
         throw new \Exception($res->body());
