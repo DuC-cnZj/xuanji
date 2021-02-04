@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'cluster_issuer'    => env('CLUSTER_ISSUER', 'letsencrypt-prod'),
     'cluster_ip'        => env('CLUSTER_IP', 'your-cluster-ip'),
     'docker_auth'       => env('DOCKER_AUTH'),
     'docker_server'     => env('DOCKER_SERVER'),
@@ -11,7 +12,7 @@ return [
     'helm_api_base_url' => env('HELM_API_BASE_URL'),
     'settings'          => [
         [
-            'image' => [
+            'image'   => [
                 'registry'   => 'registry.cn-hangzhou.aliyuncs.com',
                 'username'   => '18888780080',
                 'password'   => 'duc123243',

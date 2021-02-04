@@ -76,16 +76,17 @@ class HelmApi
 
         $wildcardHost = Str::after(parse_url(config('k8s.wildcard_domain', ''))['path'], '*');
         if ($wildcardHost) {
+            $clusterIssuer = config("k8s.cluster_issuer");
             $host = "{$release}-{$nsCopy}{$wildcardHost}";
             $secretName = "{$release}-{$nsCopy}-tls";
             $ingressConfig = [
                 'ingress.enabled=true',
                 "ingress.hosts[0].host=${host}",
                 'ingress.hosts[0].paths[0]=/',
-                "ingress.tls[0].secretName={$secretName}",
+                "ingress.tls[0].secretName=${secretName}",
                 "ingress.tls[0].hosts[0]=${host}",
                 "ingress.annotations.kubernetes\.io\/ingress\.class=nginx",
-                "ingress.annotations.cert\-manager\.io\/cluster\-issuer=letsencrypt\-prod",
+                "ingress.annotations.cert\-manager\.io\/cluster\-issuer=${clusterIssuer}",
             ];
         } else {
             $ingressConfig = [];
