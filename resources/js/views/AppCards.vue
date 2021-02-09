@@ -80,7 +80,6 @@
                 :sm="22"
                 :md="10"
                 :lg="8"
-                :xl="6"
                 v-for="(project, index) in projects"
                 :key="index"
                 style="margin-bottom: 10px;"
