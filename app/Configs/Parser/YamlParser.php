@@ -20,7 +20,7 @@ class YamlParser implements ParserImp
         $envArr = Yaml::parse($this->env) ?? [];
 
         return collect($envArr)
-            ->map(fn ($item, $key) => $this->valueKey . '.' . $key . '=' . $item)
+            ->map(fn ($item, $key) => $this->valueKey . '.' . $key . '=' . str_replace(',', '\,', $item))
             ->values()
             ->toArray();
     }
