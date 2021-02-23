@@ -115,7 +115,7 @@ class NamespacesController extends Controller
         $cpu = collect($res)
             ->pluck('containers.*.usage.cpu')
             ->flatten()
-            ->map(fn ($value) => (int) $this->getCpuUsage($value))
+            ->map(fn ($value) => $this->getCpuUsage($value))
             ->sum();
 
         return [
