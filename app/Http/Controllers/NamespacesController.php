@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Ns;
 use App\Models\Project;
 use App\Services\K8sApi;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Events\NamespaceCreated;
 use App\Events\NamespaceDeleting;
@@ -111,17 +110,60 @@ class NamespacesController extends Controller
         $memory = collect($res)
             ->pluck('containers.*.usage.memory')
             ->flatten()
-            ->map(fn ($value) => Str::contains($value, 'Mi') ? rtrim($value, 'Mi') * 1024 : rtrim($value, 'Ki'))
-            ->sum() / 1024; // Mi
+            ->map(fn ($value) => $this->getMemoryUsage($value))
+            ->sum() / pow(2, 20);
         $cpu = collect($res)
             ->pluck('containers.*.usage.cpu')
             ->flatten()
-            ->map(fn ($value) => rtrim($value, 'n'))
-            ->sum() / (1000 * 1000 * 1000);
+            ->map(fn ($value) => (int) $this->getCpuUsage($value))
+            ->sum();
 
         return [
-            'memory' => round($memory, 2) . ' mi',
-            'cpu'    => round($cpu, 2) . ' cpu',
+            'memory' => round($memory, 3) . ' mi',
+            'cpu'    => round($cpu, 3) . ' cpu',
         ];
+    }
+
+    public function getCpuUsage($value)
+    {
+        $last = substr($value, -1);
+
+        switch ($last) {
+            case 'n':
+                return rtrim($value, $last) * pow(10, -9);
+            case 'u':
+                return rtrim($value, $last) * pow(10, -6);
+            case 'm':
+                return rtrim($value, $last) * pow(10, -3);
+            case 'k':
+                return rtrim($value, $last) * pow(10, 3);
+            case 'M':
+                return rtrim($value, $last) * pow(10, 6);
+            case 'G':
+                return rtrim($value, $last) * pow(10, 9);
+            default:
+                throw new \Exception('unknown usage: ' . $value);
+        }
+    }
+
+    private function getMemoryUsage($value)
+    {
+        $last = substr($value, -2);
+        switch ($last) {
+            case 'Ki':
+                return rtrim($value, $last) * pow(2, 10);
+            case 'Mi':
+                return rtrim($value, $last) * pow(2, 20);
+            case 'Gi':
+                return rtrim($value, $last) * pow(2, 30);
+            case 'Ti':
+                return rtrim($value, $last) * pow(2, 40);
+            case 'Pi':
+                return rtrim($value, $last) * pow(2, 50);
+            case 'Ei':
+                return rtrim($value, $last) * pow(2, 60);
+            default:
+                throw new \Exception('unknown usage: ' . $value);
+        }
     }
 }

@@ -37,14 +37,14 @@ class XuanjiYaml
 
         $chartConfigured = false;
         if (Arr::has($yaml, 'local_chart')) {
-            if (!$this->ensureHasFields($yaml, $this->localChartMustHave)) {
+            if (! $this->ensureHasFields($yaml, $this->localChartMustHave)) {
                 return;
             }
             $chartConfigured = true;
         }
 
         if (Arr::has($yaml, 'chart')) {
-            if (!$this->ensureHasFields($yaml, $this->chartMustHave) && !$chartConfigured) {
+            if (! $this->ensureHasFields($yaml, $this->chartMustHave) && ! $chartConfigured) {
                 return;
             }
         }

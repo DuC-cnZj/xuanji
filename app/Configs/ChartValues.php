@@ -159,7 +159,7 @@ class ChartValues implements ChartValuesImp
     {
         $this->chartVersion = $version;
 
-        return  $this;
+        return $this;
     }
 
     public function getChartVersion(): string
@@ -172,16 +172,12 @@ class ChartValues implements ChartValuesImp
         if ($this->getIsSimpleEnv()) {
             $data = [];
             Arr::set($data, $this->getEnvValuesPrefix(), $this->getEnv());
-
-            return [
-                'values' => Yaml::dump($data),
-            ];
         } else {
             $data = $this->parser
                 ->make($this->getEnvValuesPrefix(), $this->getEnv(), $this->getEnvFileType())
                 ->parse();
-
-            return ['set' => $data];
         }
+
+        return ['values' => Yaml::dump($data)];
     }
 }
