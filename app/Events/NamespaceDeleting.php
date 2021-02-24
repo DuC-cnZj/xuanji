@@ -9,7 +9,9 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 
 class NamespaceDeleting
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public Ns $namespace;
 

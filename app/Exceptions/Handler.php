@@ -50,7 +50,7 @@ class Handler extends ExceptionHandler
             return Arr::except($trace, ['args']);
         })
             ->map(
-                fn ($item) => collect($item)->map(fn ($v, $k) =>"$k: $v")
+                fn ($item) => collect($item)->map(fn ($v, $k) => "$k: $v")
             )
             ->values()
             ->map

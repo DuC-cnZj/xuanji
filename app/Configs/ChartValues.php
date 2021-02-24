@@ -174,12 +174,11 @@ class ChartValues implements ChartValuesImp
             Arr::set($data, $this->getEnvValuesPrefix(), $this->getEnv());
 
             return ['values' => Yaml::dump($data)];
-        } else {
-            $data = $this->parser
-                ->make($this->getEnvValuesPrefix(), $this->getEnv(), $this->getEnvFileType())
-                ->parse();
-
-            return ['set' => $data];
         }
+        $data = $this->parser
+            ->make($this->getEnvValuesPrefix(), $this->getEnv(), $this->getEnvFileType())
+            ->parse();
+
+        return ['set' => $data];
     }
 }

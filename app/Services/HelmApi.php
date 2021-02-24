@@ -76,7 +76,7 @@ class HelmApi
 
         $wildcardHost = Str::after(parse_url(config('k8s.wildcard_domain', ''))['path'], '*');
         if ($wildcardHost) {
-            $clusterIssuer = config("k8s.cluster_issuer");
+            $clusterIssuer = config('k8s.cluster_issuer');
             $host = "{$release}-{$nsCopy}{$wildcardHost}";
             $secretName = "{$release}-{$nsCopy}-tls";
             $ingressConfig = [
@@ -126,13 +126,14 @@ class HelmApi
 
         if ($res->successful() && $res->json('code') == 0) {
             return $res->json($jsonKey);
-        } else {
-            try {
-                $this->uninstall($ns, $release);
-            } catch (\Exception $e) {
-                Log::error($e->getMessage());
-            }
         }
+
+        try {
+            $this->uninstall($ns, $release);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+        }
+
 
         throw new \Exception($res->body());
     }

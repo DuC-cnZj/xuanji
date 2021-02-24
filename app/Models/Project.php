@@ -79,7 +79,7 @@ class Project extends Model
 
         [$https, $http] = $this->ingresses($k8sApi);
 
-        return collect(array_merge_recursive($nodePorts, $https, $http))->flatten()->values()->toArray();
+        return collect(array_merge_recursive($https, $http, $nodePorts))->flatten()->values()->take(1)->toArray();
     }
 
     public function allPodReady(): bool
